@@ -2,4 +2,4 @@
 
 An Independent Framework-based Evapotranspiration Model (IFEM) for dual-source: from field to regional scale.
 
-The algorithm is being further sorted out and will be uploaded before June 25.
+The algorithm has been tested in ENVI/IDL 8.5 environment.

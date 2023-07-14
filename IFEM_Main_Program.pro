@@ -12,8 +12,8 @@
 ;    OR spatial raster fields of air temperature and Vapor Pressure Deficit
 ;
 ;Update history:
+;    2023-07-03 Debug and annotate
 ;    2023-04-09 Initialization code
-;    2023-06-16 Annotated
 ;
 ;This program has been tested in ENVI/IDL 5.3/5.6 environment
 ;Proposed by Shuai,Wang 214544015@qq.com
@@ -40,13 +40,13 @@ PRO IFEM_Main_Program
   ;Instantaneous meteorological observations
   u_ref = 0.5    ;[x]mean wind velocity [m s-1]
   z_ref = 2.0    ;[x]height of wind velocity observation [m]
-  Ta = 28.7     ;[x]mean air temperature [¡æ] ;Scalar or raster file path
+  Ta = 28.7     ;[x]mean air temperature [Â¡Ã¦] ;Scalar or raster file path
   zT = 2.0       ;[x]height of air temperature observation [m]
   RH = 55        ;Relative humidity [%] ;Scalar or raster file path
 
   ;Daily average meteorological parameters for Daily ET caculation
-  Ta_max = 33.76  ;Air temperature maximum [¡æ]
-  Ta_min = 14.51  ;Air temperature minimum [¡æ]
+  Ta_max = 33.76  ;Air temperature maximum [Â¡Ã¦]
+  Ta_min = 14.51  ;Air temperature minimum [Â¡Ã¦]
   RHmax = 93.0    ;Relative humidity maximum [%]
   RHmin = 37.3    ;Relative humidity minimum [%]
   rizhao = 13.0   ;Daylight hours [h]
@@ -231,9 +231,9 @@ PRO IFEM_Main_Program
   Transmvty = TRANSMVTY_CALCULATION(Trad,Pa,eact,SolAlt)    ;Atmospheric transmvty
   Sd = 1367.0*SolAlt*Transmvty/dr^2     ;Downgoing shortwave radiation [W m-2]
   L_e = (2.501-2.361e-3*(Ta-273.15))    ;latent heat of vaporization [MJ kg-1]
-  gamma_hy = (!CP*Pa)/(0.662*L_e*1E6)   ;Hygrometer constant [kPa ¡æ-1]
+  gamma_hy = (!CP*Pa)/(0.662*L_e*1E6)   ;Hygrometer constant [kPa Â¡Ã¦-1]
   rho = 1000*Pa/(1.01*Ta*287)           ;Air density [kg m-3]
-  ;Slope of the saturation vapor pressure curve at air temperature [kPa ¡æ-1]
+  ;Slope of the saturation vapor pressure curve at air temperature [kPa Â¡Ã¦-1]
   Delta = (4098.0*0.6108*EXP((17.27*(Ta-273.5))/(Ta-273.15+237.3)))/(Ta-273.15+237.3)^2
   U_Blend = WIND_VELOCITY_ASL(NDVI,NDVI_max,u_ref,z_ref)   ;Wind velocity at ASL [m s-1]
   ;ea = 1.24*(10*eact/Ta)^(1.0/7.0)    ;Atmospheric emissivity refer to Brutsaert et al., 1975

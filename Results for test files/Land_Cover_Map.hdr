@@ -1,0 +1,26 @@
+ENVI
+description = {
+ Combine Classes Result [Mon Feb 28 16:15:22 2022]}
+samples = 930
+lines   = 754
+bands   = 1
+data type = 1
+interleave = bsq
+file type = ENVI Classification
+header offset = 0
+byte order = 0
+map info = {UTM, 1.000, 1.000, 709515.000, 4568332.000, 3.000000e+01, 3.000000e+01, 48, North, WGS-84, units=Meters}
+coordinate system string = {PROJCS["WGS_1984_UTM_Zone_48N",GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137.0,298.257223563]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]],PROJECTION["Transverse_Mercator"],PARAMETER["False_Easting",500000.0],PARAMETER["False_Northing",0.0],PARAMETER["Central_Meridian",105.0],PARAMETER["Scale_Factor",0.9996],PARAMETER["Latitude_Of_Origin",0.0],UNIT["Meter",1.0]]}
+x start = 3171
+y start = 498
+wavelength units = Unknown
+data ignore value = 0.000000e+00
+classes = 13
+class names = {
+ Background, Desert, City, Building, BareLand, Other, Grass, WaterBody, 
+ Wetland, WuLiangSuHai, Maize, Sunflower, Wheat}
+class lookup = {
+   0,   0,   0, 196, 127,   0,   0,  65, 255, 109, 109, 109, 218, 218, 218,
+   0, 104,   0, 204, 255, 204,   0, 255, 255, 255, 237, 204,  11, 178, 180,
+ 150,  89, 150,   0, 240,   0, 255,   0,   0}
+sensor type = Unknown

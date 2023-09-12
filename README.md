@@ -23,7 +23,7 @@ The IFEM model is based on the modeling approach of **Fractional vegetation cove
 
 ## 🔮 User Guide
 
-The IFEM model is developed based on the **ENVI/IDL platform**. Before using this program, please make sure you have correctly installed ENVI 5.3 (IDL 8.5) or higher version on your personal computer or workstation.
+The IFEM model is developed based on the **ENVI/IDL platform**. Before using this program, please make sure you have correctly installed **ENVI 5.3 (IDL 8.5)** or higher version on your personal computer or workstation.
 
 ![ENVI/IDL platform](Guide_figures/ENVIIDL%20platform.jpg)
 

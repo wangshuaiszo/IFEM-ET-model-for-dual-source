@@ -36,7 +36,7 @@ The IFEM model is developed based on the **ENVI/IDL platform**. Before using thi
 
 * **Step3:** Preprocess the remote sensing data into raster files of surface albedo, land surface temperature, and Normalized Difference Vegetation Index (NDVI) following the methodology described by [Allen et al. (2007)](https://doi.org/10.1061/(ASCE)0733-9437(2007)133:4(380)). Modify the corresponding file paths in the program.
 
-![Step3](Guide_figures/Step%203.jpg)
+![Step3](Guide_figures/Step3.jpg)
 
 * **Step4:** Finally, compile and run the IFEM main program.
 

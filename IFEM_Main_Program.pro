@@ -14,6 +14,7 @@
 ;Update history:
 ;    2023-07-03 Debug and annotate
 ;    2023-04-09 Initialization code
+;    2023-13-09 Simplify the code
 ;
 ;This program has been tested in ENVI/IDL 5.3/5.6 environment
 ;Proposed by Shuai,Wang 214544015@qq.com
@@ -31,38 +32,36 @@ PRO IFEM_Main_Program
   ;==============Input Parameters=============
   ;[x] represent essential parameters, others optional parameters (if ignored, set to !NULL)
 
-  ;UTC time of overpass
+  ;UTC time of overpass [Required]
   Year = 2017   ;[x]Year
   Month = 7     ;[x]Month
   Day = 4       ;[x]Day
   Time = 3.5    ;[x]Time[HH]
 
-  ;Instantaneous meteorological observations
-  u_ref = 0.5    ;[x]mean wind velocity [m s-1]
+  ;Instantaneous meteorological observations [Required]
+  u_ref = 0.5    ;[x]average wind velocity [m s-1]
   z_ref = 2.0    ;[x]height of wind velocity observation [m]
-  Ta = 28.7     ;[x]mean air temperature [¡æ] ;Scalar or raster file path
+  Ta = 28.7      ;[x]average air temperature [℃] ;Scalar or raster file path
   zT = 2.0       ;[x]height of air temperature observation [m]
-  RH = 55        ;Relative humidity [%] ;Scalar or raster file path
+  VPD = 2.01     ;[x]average Vapor Pressure Deficit [kPa] ;Scalar or raster file path
 
-  ;Daily average meteorological parameters for Daily ET caculation
-  Ta_max = 33.76  ;Air temperature maximum [¡æ]
-  Ta_min = 14.51  ;Air temperature minimum [¡æ]
+  ;Daytime average meteorological parameters for Daily ET caculation [Optional]
+  Ta_max = 33.76  ;Air temperature maximum [℃]
+  Ta_min = 14.51  ;Air temperature minimum [℃]
   RHmax = 93.0    ;Relative humidity maximum [%]
   RHmin = 37.3    ;Relative humidity minimum [%]
   rizhao = 13.0   ;Daylight hours [h]
 
-  ;Basic geographic information
-  Lat = 41.0     ;Latitude [Decimal degree]
-  Lon = 107.0    ;Longitude [Decimal degree]
+  ;Basic geographic information [Required]
   DEM = 1040.0   ;[x]Mean altitude [m] ;Scalar or raster file path
 
-  ;Paths for input raster file
-  Albedo_File = 'D:\MODIS\2017\TEMP\2017007004_IFEM_Albedo.tif'
-  LST_File = 'D:\MODIS\2017\TEMP\2017007004_IFEM_Land_Surface_Temperature.tif'
-  NDVI_File = 'D:\MODIS\2017\TEMP\2017007004_IFEM_NDVI.tif'
+  ;Paths for input raster file [Required]
+  Albedo_File = 'H:\Data\2017007004_IFEM_Albedo.tif'
+  LST_File = 'H:\Data\2017007004_IFEM_Land_Surface_Temperature.tif'
+  NDVI_File = 'H:\Data\2017007004_IFEM_NDVI.tif'
 
-  ;Path for output raster file
-  Out_path = 'D:\MODIS\2017\TEMP\'    ;[x]End with '\'
+  ;Path for output raster file [Required]
+  Out_path = 'H:\Data\'    ;[x]End with '\'
 
   ;===========================================
 
@@ -165,27 +164,44 @@ PRO IFEM_Main_Program
   IF Ta.TYPENAME EQ 'STRING' THEN BEGIN
     ;Check the Air temperature raster file
     IF ~FILE_TEST(Ta) THEN BEGIN
-      PRINT,"Cannot found Air temperature raster file! A scalar value can be allowed!"
+      PRINT,"Cannot found the Air temperature raster file! A scalar value can be allowed!"
       GOTO,END_Program
     ENDIF
     ;Open raster file
     Ta_raster_temp = e.OPENRASTER(Ta)
     Ta_raster = ENVISPATIALGRIDRASTER(Ta_raster_temp,GRID_DEFINITION=Grid,RESAMPLING="bilinear")
     Ta = Ta_raster.GETDATA()
-    IF MEAN(Ta,/NAN) LT 200 THEN Ta = Ta + 273.15
-    Ta[where(Ta LT 200 OR Ta GT 350)] = !VALUES.F_NAN
     Ta_raster.CLOSE
     Ta_raster_temp.CLOSE
-  ENDIF ELSE BEGIN
-    IF Ta LT 200 THEN Ta = Ta + 273.15
-  ENDELSE
+  ENDIF
+  IF Ta LT 200 THEN Ta = Ta + 273.15
+
+  
+  ;Read VPD raster file
+  IF VPD.TYPENAME EQ 'STRING' THEN BEGIN
+    ;Check the VPD raster file
+    IF ~FILE_TEST(VPD) THEN BEGIN
+      PRINT,"Cannot found the VPD raster file! A scalar value can be allowed!"
+      GOTO,END_Program
+    ENDIF
+    ;Open raster file
+    VPD_raster_temp = e.OPENRASTER(VPD)
+    VPD_raster = ENVISPATIALGRIDRASTER(VPD_raster_temp,GRID_DEFINITION=Grid,RESAMPLING="bilinear")
+    VPD = VPD_raster.GETDATA()
+    VPD_raster.CLOSE
+    VPD_raster_temp.CLOSE
+  ENDIF
+  IF MEAN(VPD,/NAN) GT 10 THEN BEGIN
+    Print,"The unit entered for VPD may be incorrect, please convert to kPa!"
+    GOTO,END_Program
+  ENDIF
     
   ;Mask NaN values
-  NaN_Mask,NDVI,Albedo,Trad,Ta,Count
+  NaN_Mask,NDVI,Albedo,Trad,Ta,VPD,Count
   
   ;Error message for input files
   IF Count GE N_ELEMENTS(NDVI)-1 THEN BEGIN
-    PRINT,'Error: There is no intersection of raster files!'
+    PRINT,'Error: There is no intersection of input raster files!'
     GOTO,END_Program
   ENDIF
   
@@ -222,7 +238,7 @@ PRO IFEM_Main_Program
   es = 0.96  ;Surface emissivity of bare soil
   ec = 0.98  ;Surface emissivity of fully vegetated canopy
   FRACTIONAL_VAGETATION_COVER,NDVI,NDVI_max,NDVI_min,Fc,Fs
-  VAPOR_PRESSURE_DEFICIT,Ta,RH,Trad,LoT,VPD,eact   ;Vapor Pressure Deficit [kPa]
+  ACTUAL_VAPOR_PRESSURE,Ta,VPD,Trad,LoT,eact   ;Vapor Pressure Deficit [kPa]
   ALBEDO_DECOMPOSITION,Albedo,SolAlt,DEM,Fc,Fs,Albedo_s,Albedo_c  ;Component Albedo calculation
 
   ;Atmospheric parameters calculation
@@ -263,16 +279,13 @@ PRO IFEM_Main_Program
   ;zT correction based on mean canopy height
   zT = ZT_CORRECTION(NDVI,NDVI_max,zT)
 
-  ;Initial Slope
-  Slope_old = !VALUES.F_NAN
-
   FOR i=1,20 DO BEGIN
 
     ;Aerodynamic Resistance calculation
     Ras = AERODYNAMICS_RESISTANCE_SOIL(Ts,Ta,rho,u_Blend,zT)
     Rac = AERODYNAMICS_RESISTANCE_CANOPY(Tc,Ta,rho,u_Blend,zT)
-    PRINT,'Ras mean: ' + STRTRIM(STRING(MEAN(Ras[where(NDVI GT 0)],/nan)),2)
-    PRINT,'Rac mean: ' + STRTRIM(STRING(MEAN(Rac[where(NDVI GT 0)],/nan)),2)
+    ;PRINT,'Ras mean: ' + STRTRIM(STRING(MEAN(Ras[where(NDVI GT 0)],/nan)),2)
+    ;PRINT,'Rac mean: ' + STRTRIM(STRING(MEAN(Rac[where(NDVI GT 0)],/nan)),2)
 
     SUB = WHERE(NDVI LT 0)
     ;Independent trapezoid framework for each pixel
@@ -295,19 +308,27 @@ PRO IFEM_Main_Program
     Gamma_sw = 0.5   ;Gamma for wet bare soil
     Gamma_s = Gamma_sw*Lambda_SM + Gamma_sd*(1-Lambda_SM)  ;Gamma for bare soil
 
-    ;Trad decomposition
+    ;Interpolation of the Slope 
     K_cold = Tcmin-Tsmin     ;Slope of the cold edge
     K_warm = Tcmax-Tsmax     ;Slope of the warm edge
     K_slope = K_warm+Lambda_SM*(K_cold-K_warm)  ;Slope of the Lambda_SM isoline
+
+    ;Let the slope K converge faster
+    IF K_slope_old EQ !NULL THEN K_slope_old = K_slope*!VALUES.F_NAN
+    K_slope = MEAN([[[K_slope]],[[K_slope_old]]],DIMENSION=3,/NAN)
+    
+    ;Prompt information
+    K_Slope_MEAN = MEAN(K_slope[where(NDVI GT 0 AND Fc LT 0.8)],/NAN)
+    Print,Strtrim(string(i),2)+'-th iterating, mean slope = ' + STRTRIM(STRING(K_Slope_MEAN),2)
+    
+    ;Break out of the loop
+    IF ABS(MEAN(K_slope_old-K_slope,/NAN)) LT 0.1 THEN BREAK
+    
+    ;Trad decomposition
     Ts = Trad - K_slope*Fc   ;Surface tamperature for bare soil component [K]
     Tc = Ts + K_slope*1.0    ;Surface tamperature for fully canopy component [K]
     
-    ;Prompt information
-    Slope_new = MEAN(K_slope[where(NDVI GT 0 AND Fc LT 0.8)],/nan)
-    Print,Strtrim(string(i),2)+'-th iterating, mean slope = ' + STRTRIM(STRING(Slope_new),2)
-    
-    ;Break out of the loop
-    IF ABS(Slope_new - Slope_old) LT 1 THEN BREAK
+    K_slope_old = K_slope
 
   ENDFOR
 
@@ -403,10 +424,16 @@ PRO IFEM_Main_Program
 ;  Ta_Raster.CLOSE
 
   ;Output Soil Moistuare Availability
-  Lambda_SM_URI = Out_path+Year+Month+Day+'_IFEM_Soil_Moisture_Availability(scalar driven).dat'
+  Lambda_SM_URI = Out_path+Year+Month+Day+'_IFEM_Soil_Moisture_Availability.dat'
   Lambda_SM_Raster = ENVIRASTER(Lambda_SM,SPATIALREF=Grid.SPATIALREF,URI=Lambda_SM_URI)
   Lambda_SM_Raster.SAVE
   Lambda_SM_Raster.CLOSE
+
+  ;Output Rn
+  Rn_URI = Out_path+Year+Month+Day+'_IFEM_net_radiation.dat'
+  Rn_Raster = ENVIRASTER(Rn,SPATIALREF=Grid.SPATIALREF,URI=Rn_URI)
+  Rn_Raster.SAVE
+  Rn_Raster.CLOSE
 
 ;  ;Output LE_s and LE_c
 ;  LEs_URI = Out_path+Year+Month+Day+'_IFEM_Soil_Latent.dat'
@@ -427,7 +454,7 @@ PRO IFEM_Main_Program
 ;  G_Raster = ENVIRASTER(G,SPATIALREF=Grid.SPATIALREF,URI=G_URI)
 ;  G_Raster.SAVE
 ;  G_Raster.CLOSE
-;
+
 ;  ;Output H
 ;  H_URI = Out_path+Year+Month+Day+'_IFEM_Sensible_Heat_Flux.dat'
 ;  H_Raster = ENVIRASTER(H,SPATIALREF=Grid.SPATIALREF,URI=H_URI)
@@ -436,19 +463,19 @@ PRO IFEM_Main_Program
 
   IF Rizhao NE !NULL AND Rizhao NE 0 THEN BEGIN
     ;Output Component Evaporationn
-    E_URI = Out_path+Year+Month+Day+'_IFEM_Daily_Evaporation(scalar driven).dat'
+    E_URI = Out_path+Year+Month+Day+'_IFEM_Daily_Evaporation.dat'
     E_Raster = ENVIRASTER(E_Daily,SPATIALREF=Grid.SPATIALREF,URI=E_URI)
     E_Raster.SAVE
     E_Raster.CLOSE
 
     ;Output Component Transpiration
-    T_URI = Out_path+Year+Month+Day+'_IFEM_Daily_Transpiration(scalar driven).dat'
+    T_URI = Out_path+Year+Month+Day+'_IFEM_Daily_Transpiration.dat'
     T_Raster = ENVIRASTER(T_Daily,SPATIALREF=Grid.SPATIALREF,URI=T_URI)
     T_Raster.SAVE
     T_Raster.CLOSE
     
     ;Output Component Transpiration
-    ET_URI = Out_path+Year+Month+Day+'_IFEM_Daily_ET(scalar driven).dat'
+    ET_URI = Out_path+Year+Month+Day+'_IFEM_Daily_ET.dat'
     ET_Raster = ENVIRASTER(ET_Daily,SPATIALREF=Grid.SPATIALREF,URI=ET_URI)
     ET_Raster.SAVE
     ET_Raster.CLOSE
@@ -506,34 +533,27 @@ END
 ;========================================================================
 
 
-PRO NAN_MASK,NDVI,Albedo,Trad,Ta,Count
+PRO NAN_MASK,NDVI,Albedo,Trad,Ta,VPD,Count
   ;Mask NaN values in rasters
-
-  IF N_ELEMENTS(Ta) GT 1 THEN BEGIN
-    ;Input Air temperature raster
-
-    ;Index for NaN values
-    Sub = WHERE(FINITE(NDVI,/NAN) OR FINITE(Albedo,/NAN) OR FINITE(Trad,/NAN) OR FINITE(Ta,/NAN),Count)
-
-    ;Mask
-    IF Count GE 1 THEN BEGIN
-      NDVI[sub] = !VALUES.F_NAN
-      Albedo[sub] = !VALUES.F_NAN
-      Trad[sub] = !VALUES.F_NAN
-      Ta[sub] = !VALUES.F_NAN
-    ENDIF
-
-  ENDIF ELSE BEGIN
-    ;Input Air temperature scalar
-
-    Sub = WHERE(FINITE(NDVI,/NAN) OR FINITE(Albedo,/NAN) OR FINITE(Trad,/NAN),Count)
-    IF Count GE 1 THEN BEGIN
-      NDVI[sub] = !VALUES.F_NAN
-      Albedo[sub] = !VALUES.F_NAN
-      Trad[sub] = !VALUES.F_NAN
-    ENDIF
-
-  ENDELSE
+  
+  ;Create an index array
+  Size = size(NDVI,/dime)
+  Index = make_array(Size,VALUE=1)
+  
+  ;Mask NaN values
+  Index[WHERE(FINITE(NDVI,/NAN),/NULL)] = 0
+  Index[WHERE(FINITE(Albedo,/NAN),/NULL)] = 0
+  Index[WHERE(FINITE(Trad,/NAN),/NULL)] = 0
+  IF N_ELEMENTS(Ta) GT 1 THEN Index[WHERE(FINITE(Ta,/NAN),/NULL)] = 0
+  IF N_ELEMENTS(VPD) GT 1 THEN Index[WHERE(FINITE(VPD,/NAN),/NULL)] = 0
+  
+  ;Align available dataset
+  Sub = WHERE(Index EQ 0,Count,/NULL)
+  NDVI[sub] = !VALUES.F_NAN
+  Albedo[sub] = !VALUES.F_NAN
+  Trad[sub] = !VALUES.F_NAN
+  IF N_ELEMENTS(Ta) GT 1 THEN Ta[Sub] = !VALUES.F_NAN
+  IF N_ELEMENTS(VPD) GT 1 THEN VPD[Sub] = !VALUES.F_NAN
 
 END
 
@@ -597,32 +617,16 @@ PRO FRACTIONAL_VAGETATION_COVER,NDVI,NDVI_max,NDVI_min,Fc,Fs
 END
 
 
-PRO VAPOR_PRESSURE_DEFICIT,Ta,RH,Trad,LoT,VPD,eact
+PRO ACTUAL_VAPOR_PRESSURE,Ta,VPD,Trad,LoT,eact
 ;Vapor pressure deficit(VPD) calculation [kPa]
-;If RH is inputed as a scalar,then calculate the uniform VPD value
 
   ;Saturated vapor pressure [kPa]
   esat = 0.6108*EXP(17.27*(Ta-273.15)/(Ta-273.15+237.3))
-
-  IF RH NE 0 AND RH NE !NULL THEN BEGIN
-    ;Uniform value of VPD for homogeneous surface
-    eact = RH/100.0*esat
-    VPD = esat-eact
-
-  ENDIF ELSE BEGIN
-    
-    ;Spatial field of VPD for heterogeneous surface
-    ;According to Hirofumi Hashimoto et al. (2008)
-    ;http://doi.org/10.1016/j.rse.2007.04.016
-    esat_Trad = 0.611*EXP(17.27*(Trad - 273.15)/(Trad-273.15+240.97))
-    IF LoT GE 8 AND LoT LT 14 THEN VPD = 0.37*esat_Trad+0.15
-    IF LoT GE 14 AND LoT LT 16 THEN VPD = 0.43*esat_Trad+0.15
-    IF LoT GE 16 AND LoT LT 18 THEN VPD = 0.55*esat_Trad+0.15
-    
-    ;Actual vapor pressure [kPa]
-    eact = esat - VPD  
-    eact[WHERE(eact LT 0.1)] = 0.1
-  ENDELSE
+  
+  ;Actual vapor pressure [kPa]
+  eact = esat - VPD
+  eact = eact > 0.1
+  eact = eact < esat
 
 END
 

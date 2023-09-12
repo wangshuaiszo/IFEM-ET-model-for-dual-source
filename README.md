@@ -5,7 +5,7 @@
 
 ## 💡 Introduction
 
-An Independent Framework-based Evapotranspiration Model (IFEM) for dual-source: from field to regional scale.
+**An Independent Framework-based Evapotranspiration Model (IFEM)** for dual-source: from field to regional scale.
 
 The IFEM model is a remote sensing-based land surface evapotranspiration retrieval model. It is a user-friendly model that allows for the easy estimation of surface evaporation and transpiration components with minimal required surface observation data.
 

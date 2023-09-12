@@ -1,8 +1,7 @@
 # IFEM remote sensing ET model for dual source
 
-[💡 Introduction](https://github.com/wangshuaiszo/IFEM-ET-model-for-dual-source/tree/main#-introduction)
-
-[🔮 User Guide](https://github.com/wangshuaiszo/IFEM-ET-model-for-dual-source/tree/main#-user-guide)
+[**Introduction**](#-introduction)
+ [**User Guide**](#-user-guide)
 
 ## 💡 Introduction
 

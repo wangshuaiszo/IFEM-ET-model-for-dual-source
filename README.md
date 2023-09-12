@@ -17,7 +17,9 @@ The IFEM model is based on the modeling approach of **Fractional vegetation cove
 
 > **Please cite:** *[Wang, S., Wang, C., Zhang, C., Wang, W., Wang, P., Zhang, X., Wang, X., Rong, Y., Wang, D., Huang, G., Huo, Z., 2023. An independent framework-based evapotranspiration model (IFEM) for dual-source: From field to regional scale. Remote Sensing of Environment 298, 113792. https://doi.org/10.1016/j.rse.2023.113792](https://doi.org/10.1016/j.rse.2023.113792)*
 > 
-> **E-mail: 214544015@qq.com (Dr. Shuai Wang); huozl@cau.edu.cn (Professor Zailin Huo).**
+> **E-mail:**
+> * 214544015@qq.com (Dr. Shuai Wang);
+> * huozl@cau.edu.cn (Professor Zailin Huo).
 
 
 

@@ -1,5 +1,9 @@
 # IFEM remote sensing ET model for dual source
 
+[💡 Introduction](https://github.com/wangshuaiszo/IFEM-ET-model-for-dual-source/tree/main#-introduction)
+
+[🔮 User Guide](https://github.com/wangshuaiszo/IFEM-ET-model-for-dual-source/tree/main#-user-guide)
+
 ## 💡 Introduction
 
 An Independent Framework-based Evapotranspiration Model (IFEM) for dual-source: from field to regional scale.

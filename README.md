@@ -1,7 +1,6 @@
 # IFEM remote sensing ET model for dual source
 
-[**Introduction**](#-introduction)
- [**User Guide**](#-user-guide)
+[**Introduction**](#-introduction)     [**User Guide**](#-user-guide)     
 
 ## 💡 Introduction
 

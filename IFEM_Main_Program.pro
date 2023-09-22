@@ -12,12 +12,16 @@
 ;    OR spatial raster fields of air temperature and Vapor Pressure Deficit
 ;
 ;Update history:
-;    2023-07-03 Debug and annotate
-;    2023-04-09 Initialization code
-;    2023-13-09 Simplify the code
+;    2023-Sept.-13 Code simplification
+;    2023-July-03  Debug and annotate
+;    2023-Apr.-09  Initialization code
 ;
+;Please Cite:  Wang, Shuai, Wang, Chaozi, et al, 2023. DOI: 10.1016/j.rse.2023.113792
+;
+;E-mail: 214544015@qq.com (Dr. Shuai,Wang)
+;        huozl@cau.edu.cn (Prof. Zailin,Huo)
+;        
 ;This program has been tested in ENVI/IDL 5.3/5.6 environment
-;Proposed by Shuai,Wang 214544015@qq.com
 ;=========================================================================
 
 
@@ -45,12 +49,12 @@ PRO IFEM_Main_Program
   zT = 2.0       ;[x]height of air temperature observation [m]
   VPD = 2.01     ;[x]average Vapor Pressure Deficit [kPa] ;Scalar or raster file path
 
-  ;Daytime average meteorological parameters for Daily ET caculation [Optional]
-  Ta_max = 33.76  ;Air temperature maximum [℃]
-  Ta_min = 14.51  ;Air temperature minimum [℃]
-  RHmax = 93.0    ;Relative humidity maximum [%]
-  RHmin = 37.3    ;Relative humidity minimum [%]
-  rizhao = 13.0   ;Daylight hours [h]
+  ;Daytime meteorological parameters for Daily ET caculation [Optional]
+  Ta_max = 33.76   ;Air temperature maximum [℃]
+  Ta_min = 14.51   ;Air temperature minimum [℃]
+  RH_max = 93.0    ;Relative humidity maximum [%]
+  RH_min = 37.3    ;Relative humidity minimum [%]
+  Daylight = 13.0   ;Sunshine duration [h]
 
   ;Basic geographic information [Required]
   DEM = 1040.0   ;[x]Mean altitude [m] ;Scalar or raster file path
@@ -238,7 +242,7 @@ PRO IFEM_Main_Program
   es = 0.96  ;Surface emissivity of bare soil
   ec = 0.98  ;Surface emissivity of fully vegetated canopy
   FRACTIONAL_VAGETATION_COVER,NDVI,NDVI_max,NDVI_min,Fc,Fs
-  ACTUAL_VAPOR_PRESSURE,Ta,VPD,Trad,LoT,eact   ;Vapor Pressure Deficit [kPa]
+  ACTUAL_VAPOR_PRESSURE,Ta,VPD,Trad,eact   ;Vapor Pressure Deficit [kPa]
   ALBEDO_DECOMPOSITION,Albedo,SolAlt,DEM,Fc,Fs,Albedo_s,Albedo_c  ;Component Albedo calculation
 
   ;Atmospheric parameters calculation
@@ -366,11 +370,11 @@ PRO IFEM_Main_Program
 
   ;========Extrapolated to daily Evaporation and daily Transpiration=======
 
-  ;IF Rizhao equal to zero, don't extension to daily scale
-  IF Rizhao NE !NULL AND Rizhao NE 0 THEN BEGIN
+  ;IF Daylight equal to zero, don't extension to daily scale
+  IF Daylight NE !NULL AND Daylight NE 0 THEN BEGIN
 
     ;Daily net radiation [MJ m-2 day-1]
-    Rn_day = DAILY_NET_RADIATION(DOY,LAT,DEM,rizhao,Ta_max,Ta_min,RHmax,RHmin,Albedo,Pa,SolAlt)
+    Rn_day = DAILY_NET_RADIATION(DOY,LAT,DEM,Daylight,Ta_max,Ta_min,RH_max,RH_min,Albedo,Pa,SolAlt)
     
     ;Evaporation Fraction [0,1]
     EF_s = LE_s/((1-Gamma_s)*Rn_s)  ;For bare soil component
@@ -444,24 +448,24 @@ PRO IFEM_Main_Program
 ;  LEc_Raster = ENVIRASTER(LE_c,SPATIALREF=Grid.SPATIALREF,URI=LEc_URI)
 ;  LEc_Raster.SAVE
 ;  LEc_Raster.CLOSE
-;  LE_URI = Out_path+Year+Month+Day+'_IFEM_Latent.dat'
-;  LE_Raster = ENVIRASTER(LE_inst,SPATIALREF=Grid.SPATIALREF,URI=LE_URI)
-;  LE_Raster.SAVE
-;  LE_Raster.CLOSE
+  LE_URI = Out_path+Year+Month+Day+'_IFEM_Latent.dat'
+  LE_Raster = ENVIRASTER(LE_inst,SPATIALREF=Grid.SPATIALREF,URI=LE_URI)
+  LE_Raster.SAVE
+  LE_Raster.CLOSE
 
-;  ;Output G
-;  G_URI = Out_path+Year+Month+Day+'_IFEM_Soil_Heat_Flux.dat'
-;  G_Raster = ENVIRASTER(G,SPATIALREF=Grid.SPATIALREF,URI=G_URI)
-;  G_Raster.SAVE
-;  G_Raster.CLOSE
+  ;Output G
+  G_URI = Out_path+Year+Month+Day+'_IFEM_Soil_Heat_Flux.dat'
+  G_Raster = ENVIRASTER(G,SPATIALREF=Grid.SPATIALREF,URI=G_URI)
+  G_Raster.SAVE
+  G_Raster.CLOSE
 
-;  ;Output H
-;  H_URI = Out_path+Year+Month+Day+'_IFEM_Sensible_Heat_Flux.dat'
-;  H_Raster = ENVIRASTER(H,SPATIALREF=Grid.SPATIALREF,URI=H_URI)
-;  H_Raster.SAVE
-;  H_Raster.CLOSE
+  ;Output H
+  H_URI = Out_path+Year+Month+Day+'_IFEM_Sensible_Heat_Flux.dat'
+  H_Raster = ENVIRASTER(H,SPATIALREF=Grid.SPATIALREF,URI=H_URI)
+  H_Raster.SAVE
+  H_Raster.CLOSE
 
-  IF Rizhao NE !NULL AND Rizhao NE 0 THEN BEGIN
+  IF Daylight NE !NULL AND Daylight NE 0 THEN BEGIN
     ;Output Component Evaporationn
     E_URI = Out_path+Year+Month+Day+'_IFEM_Daily_Evaporation.dat'
     E_Raster = ENVIRASTER(E_Daily,SPATIALREF=Grid.SPATIALREF,URI=E_URI)
@@ -558,7 +562,7 @@ PRO NAN_MASK,NDVI,Albedo,Trad,Ta,VPD,Count
 END
 
 
-FUNCTION DAILY_NET_RADIATION,DOY,Lat,DEM,rizhao,Ta_max,Ta_min,RHmax,RHmin,Albedo,Pa,SolAlt
+FUNCTION DAILY_NET_RADIATION,DOY,Lat,DEM,Daylight,Ta_max,Ta_min,RH_max,RH_min,Albedo,Pa,SolAlt
 ;Calculation for daily net radiation according to FAO-56
 
   ;Convert temperature unit to Kelvin [K]
@@ -571,10 +575,10 @@ FUNCTION DAILY_NET_RADIATION,DOY,Lat,DEM,rizhao,Ta_max,Ta_min,RHmax,RHmin,Albedo
   Sunrise_ang = ACOS(-TAN(Lat)*TAN(SolDec)) ;Sunset angle [rad]
 
   ;Vapor pressure near surface
-  e0_Tamax = 0.611*EXP(17.27*(Ta_max-273.15)/(Ta_max-273.15+240.97))  ;[kPa]
-  e0_Tamin = 0.611*EXP(17.27*(Ta_min-273.15)/(Ta_min-273.15+240.97))  ;[kPa]
-  esat = (e0_Tamax+e0_Tamin)/2  ;Saturation vapor pressure [kPa]
-  eact = (e0_Tamax*RHmin/100 + e0_Tamin*RHmax/100)/2   ;Actual vapor pressure [kPa]
+  e0_Ta_max = 0.611*EXP(17.27*(Ta_max-273.15)/(Ta_max-273.15+240.97))  ;[kPa]
+  e0_Ta_min = 0.611*EXP(17.27*(Ta_min-273.15)/(Ta_min-273.15+240.97))  ;[kPa]
+  esat = (e0_Ta_max+e0_Ta_min)/2  ;Saturation vapor pressure [kPa]
+  eact = (e0_Ta_max*RH_min/100 + e0_Ta_min*RH_max/100)/2   ;Actual vapor pressure [kPa]
 
   ;Broad-band atmospheric transmissivity according to ASCE-EWRI(2005)
   Transmvty = TRANSMVTY_CALCULATION(Albedo,Pa,eact,SolAlt)
@@ -586,7 +590,7 @@ FUNCTION DAILY_NET_RADIATION,DOY,Lat,DEM,rizhao,Ta_max,Ta_min,RHmax,RHmin,Albedo
   ;Solar radition [MJ m-2 day-1]
   as = 0.15
   bs = 0.6
-  Rs = (as+bs*Rizhao/N)*Ra
+  Rs = (as+bs*Daylight/N)*Ra
 
   ;Daily net radiation [MJ m-2 day-1]
   RnS = (1-1.1*Albedo)*Rs    ;Net shortwave radiation [MJ m-2 day-1]
@@ -617,8 +621,8 @@ PRO FRACTIONAL_VAGETATION_COVER,NDVI,NDVI_max,NDVI_min,Fc,Fs
 END
 
 
-PRO ACTUAL_VAPOR_PRESSURE,Ta,VPD,Trad,LoT,eact
-;Vapor pressure deficit(VPD) calculation [kPa]
+PRO ACTUAL_VAPOR_PRESSURE,Ta,VPD,Trad,eact
+;Actual vapor pressure calculation [kPa]
 
   ;Saturated vapor pressure [kPa]
   esat = 0.6108*EXP(17.27*(Ta-273.15)/(Ta-273.15+237.3))

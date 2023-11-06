@@ -37,15 +37,15 @@ The program code can be compiled and executed in the ENVI/IDL environment. For i
   * **Average meteorological forcing during daytime** (Air temperature maximum/minimum, Relative humidity maximum/minimum and Daylight hours) \[**Optional**\];
   * **Average altitude** of the study area.
 
- ![Step2](Guide_figures/Step2.jpg)
+ <img src='https://github.com/wangshuaiszo/IFEM-ET-model-for-dual-source/blob/main/Guide_figures/Step2.jpg' width='800px'>
 
 * **Step3:** Preprocess the remote sensing data into raster files of the **surface albedo**, **land surface temperature**, and **Normalized Difference Vegetation Index (NDVI)** following the methodology described by [Allen et al. (2007)](https://doi.org/10.1061/(ASCE)0733-9437(2007)133:4(380)). Modify the corresponding file paths in the program.
 
-![Step3](Guide_figures/Step3.jpg)
+<img src='https://github.com/wangshuaiszo/IFEM-ET-model-for-dual-source/blob/main/Guide_figures/Step3.jpg' width='650px'>
 
 * **Step4:** Finally, **compile** and **run** the IFEM main program.
 
-![Step4](Guide_figures/Step4.jpg)
+<img src='https://github.com/wangshuaiszo/IFEM-ET-model-for-dual-source/blob/main/Guide_figures/Step4.jpg' width='300px'>
 
 
 ## 🧲 User Guide for The Extension
@@ -54,13 +54,14 @@ This extension allows users to run IFEM models through the ENVI interactive inte
 
 * **Step1:** Place the [IFEM extension file](IFEM_EXTENSION.sav) (.sav) in the extension folder under the ENVI installation path: `D:\...\ENVI53\extensions\...`. Then restart ENVI. The IFEM extension can be found in Toolbox-Extension.
 
-![Extension Location](Guide_figures/Extension%20location.jpg)
+ <img src='https://github.com/wangshuaiszo/IFEM-ET-model-for-dual-source/blob/main/Guide_figures/Extension%20location.jpg' width='400px'>
 
 * **Step2:** Enter the parameters and raster file in the interactive interface, and then click the ‘**Execute**’ button to execute the IFEM program.
-  ![Extension UI](Guide_figures/IFEM%20Extension%20UI%20guide.jpg)
+  
+  <img src='https://github.com/wangshuaiszo/IFEM-ET-model-for-dual-source/blob/main/Guide_figures/IFEM%20Extension%20UI%20guide.jpg' width='500px'>
   
 * **Step3:** The output results will be saved in the specified output path and **displayed in the ENVI window**.
-![Result Display](Guide_figures/Result%20Output.jpg)
+<img src='https://github.com/wangshuaiszo/IFEM-ET-model-for-dual-source/blob/main/Guide_figures/Result%20Output.jpg' width='800px'>
 
 
 ## 📩 Contact us

@@ -53,11 +53,9 @@ The program code can be compiled and executed in the ENVI/IDL environment. For i
 This extension allows users to run IFEM models through the ENVI interactive interface without any IDL programming knowledge.
 
 * **Step1:** Place the [IFEM extension file](IFEM_EXTENSION.sav) (.sav) in the extension folder under the ENVI installation path: `D:\...\ENVI53\extensions\...`. Then restart ENVI. The IFEM extension can be found in Toolbox-Extension.
-
  <img src='https://github.com/wangshuaiszo/IFEM-ET-model-for-dual-source/blob/main/Guide_figures/Extension%20location.jpg' width='400px'>
 
 * **Step2:** Enter the parameters and raster file in the interactive interface, and then click the ‘**Execute**’ button to execute the IFEM program.
-  
   <img src='https://github.com/wangshuaiszo/IFEM-ET-model-for-dual-source/blob/main/Guide_figures/IFEM%20Extension%20UI%20guide.jpg' width='500px'>
   
 * **Step3:** The output results will be saved in the specified output path and **displayed in the ENVI window**.

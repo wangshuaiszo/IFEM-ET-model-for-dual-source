@@ -29,7 +29,9 @@ The IFEM model is developed based on the **ENVI/IDL platform**. Before using thi
 
 The program code can be compiled and executed in the ENVI/IDL environment. For individual routines, simply follow the steps below, modify the input parameters, and then run. However, if there is a need to process a large amount of data, IDLBridge technology can be used for parallel processing, and developers need to have knowledge of IDL programming.
 
-* **Step1:** First, download the main IFEM program file [**IFEM_Main_Program.pro**](IFEM_Main_Program.pro) and open it using the IDL IDE.![Step1](Guide_figures/Step1.jpg)
+* **Step1:** First, download the main IFEM program file [**IFEM_Main_Program.pro**](IFEM_Main_Program.pro) and open it using the IDL IDE (**File-->Open**).
+
+![Step1](Guide_figures/Step1.jpg)
 
 * **Step2:** Input the necessary parameters for the model, including:
   * **Satellite overpass time** (Year, Month, Day and  decimal Hours in UTC);
@@ -52,7 +54,7 @@ The program code can be compiled and executed in the ENVI/IDL environment. For i
 
 This extension allows users to run IFEM models through the ENVI interactive interface without any IDL programming knowledge.
 
-* **Step1:** Place the [IFEM extension file](IFEM_EXTENSION.sav) (.sav) in the extension folder under the ENVI installation path: `D:\...\ENVI53\extensions\...`. Then restart ENVI. The IFEM extension can be found in Toolbox-Extension.
+* **Step1:** Place the [IFEM extension file](IFEM_EXTENSION.sav) (.sav) in the extension folder under the ENVI installation path: `D:\...\ENVI53\extensions\...`. Then restart ENVI. The IFEM extension can be found in **Toolbox-->Extension**.
 
  <img src='https://github.com/wangshuaiszo/IFEM-ET-model-for-dual-source/blob/main/Guide_figures/Extension%20location.jpg' width='400px'>
 

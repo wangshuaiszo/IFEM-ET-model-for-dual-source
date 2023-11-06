@@ -43,11 +43,11 @@ PRO IFEM_Main_Program
   Time = 3.5    ;[x]Time[HH]
 
   ;Instantaneous meteorological observations [Required]
-  u_ref = 0.5    ;[x]average wind velocity [m s-1]
-  z_ref = 2.0    ;[x]height of wind velocity observation [m]
-  Ta = 28.7      ;[x]average air temperature [℃] ;Scalar or raster file path
-  zT = 2.0       ;[x]height of air temperature observation [m]
-  VPD = 2.01     ;[x]average Vapor Pressure Deficit [kPa] ;Scalar or raster file path
+  u_ref = 0.5    ;[x]Regional average wind velocity [m s-1]
+  z_ref = 2.0    ;[x]Height of wind velocity observation [m]
+  Ta = 28.7      ;[x]Regional average air temperature [℃] ;Scalar or raster file path
+  zT = 2.0       ;[x]Height of air temperature observation [m]
+  VPD = 2.01     ;[x]Regional average Vapor Pressure Deficit [kPa] ;Scalar or raster file path
 
   ;Daytime meteorological parameters for Daily ET caculation [Optional]
   Ta_max = 33.76   ;Air temperature maximum [℃]
@@ -60,12 +60,12 @@ PRO IFEM_Main_Program
   DEM = 1040.0   ;[x]Mean altitude [m] ;Scalar or raster file path
 
   ;Paths for input raster file [Required]
-  Albedo_File = 'H:\Data\2017007004_IFEM_Albedo.tif'
-  LST_File = 'H:\Data\2017007004_IFEM_Land_Surface_Temperature.tif'
-  NDVI_File = 'H:\Data\2017007004_IFEM_NDVI.tif'
+  Albedo_File = 'H:\Data\20170704_IFEM_Albedo.tif'
+  LST_File = 'H:\Data\20170704_IFEM_Land_Surface_Temperature.tif'
+  NDVI_File = 'H:\Data\20170704_IFEM_NDVI.tif'
 
   ;Path for output raster file [Required]
-  Out_path = 'H:\Data\'    ;[x]End with '\'
+  Out_path = 'H:\Data\Output_data\'    ;[x]End with '\'
 
   ;===========================================
 
@@ -114,7 +114,7 @@ PRO IFEM_Main_Program
     goto,END_Program
   endif
   NDVI_Raster = e.openraster(NDVI_file)
-  NDVI = NDVI_Raster.getdata()
+  NDVI = Float(NDVI_Raster.getdata())
   NDVI[where(NDVI LT -1 OR NDVI GT 1)] = !VALUES.F_NAN
   
   ;Getting infromations of spatial reafrance
@@ -146,7 +146,7 @@ PRO IFEM_Main_Program
   ENDIF
   Albedo_raster_temp = e.openraster(Albedo_File)
   Albedo_raster = ENVISPATIALGRIDRASTER(Albedo_raster_temp,GRID_DEFINITION=Grid,RESAMPLING="bilinear")
-  Albedo = Albedo_raster.getdata()
+  Albedo = Float(Albedo_raster.getdata())
   Albedo[where(Albedo LT 0 OR Albedo GT 1)] = !VALUES.F_NAN
   Albedo_raster.close
   Albedo_raster_temp.close
@@ -158,7 +158,7 @@ PRO IFEM_Main_Program
   ENDIF
   LST_raster_temp = e.OPENRASTER(LST_File)
   LST_raster = ENVISPATIALGRIDRASTER(LST_raster_temp,GRID_DEFINITION=Grid,RESAMPLING="bilinear")
-  Trad = LST_raster.GETDATA()
+  Trad = Float(LST_raster.GETDATA())
   IF mean(Trad,/NAN) LT 200 THEN Trad = Trad + 273.15
   Trad[where(Trad LT 200 OR Trad GT 350)] = !VALUES.F_NAN
   LST_raster.CLOSE
@@ -174,7 +174,7 @@ PRO IFEM_Main_Program
     ;Open raster file
     Ta_raster_temp = e.OPENRASTER(Ta)
     Ta_raster = ENVISPATIALGRIDRASTER(Ta_raster_temp,GRID_DEFINITION=Grid,RESAMPLING="bilinear")
-    Ta = Ta_raster.GETDATA()
+    Ta = Float(Ta_raster.GETDATA())
     Ta_raster.CLOSE
     Ta_raster_temp.CLOSE
   ENDIF
@@ -191,7 +191,7 @@ PRO IFEM_Main_Program
     ;Open raster file
     VPD_raster_temp = e.OPENRASTER(VPD)
     VPD_raster = ENVISPATIALGRIDRASTER(VPD_raster_temp,GRID_DEFINITION=Grid,RESAMPLING="bilinear")
-    VPD = VPD_raster.GETDATA()
+    VPD = Float(VPD_raster.GETDATA())
     VPD_raster.CLOSE
     VPD_raster_temp.CLOSE
   ENDIF
@@ -223,8 +223,8 @@ PRO IFEM_Main_Program
   SPATIALREF = Grid.SPATIALREF    ;Spatial reference
   Spatialref.CONvertfiletomap,Ncolumns/2,Nrows/2,Mapx,Mapy  ;Get the Map coordinates of the center pixel
   Spatialref.CONvertmaptolonlat,Mapx,Mapy,Lon,Lat           ;Get the Longitude and Latitude of the center pixel
-  Lat = Lat[0]*!DTOR   ;Latitude [rad]
-  Lon = Lon[0]*!DTOR   ;Longitude [rad]
+  Lat = Float(Lat[0]*!DTOR)   ;Latitude [rad]
+  Lon = Float(Lon[0]*!DTOR)   ;Longitude [rad]
 
   ;Solar radiation parameters calculation
   DOY = day-32+FIX(275*month/9)+2*FIX(3/(month+1))+FIX(month/100-(year MOD 4)/4+0.975)  ;Day of year [1,366]
@@ -294,18 +294,18 @@ PRO IFEM_Main_Program
     SUB = WHERE(NDVI LT 0)
     ;Independent trapezoid framework for each pixel
     ;Maximum surface temperature for dry bare soil
-    Tsmax = (1-Gamma_s)*Rna_s/(rho*!CP*(1/Ras+(1-Gamma_s)/rR_s))+Ta
+    Ts_max = (1-Gamma_s)*Rna_s/(rho*!CP*(1/Ras+(1-Gamma_s)/rR_s))+Ta
     ;Maximum surface temperature for dry canopy
-    Tcmax = (1-Gamma_c)*Rna_c/(rho*!CP*(1/Rac+(1-Gamma_c)/rR_c))+Ta
-    Tcmax[sub] = (1-0.5)*Rna_c[sub]/(rho[sub]*!CP*(1/Rac[sub]+(1-0.5)/rR_c[sub]))+Ta[sub]
+    Tc_max = (1-Gamma_c)*Rna_c/(rho*!CP*(1/Rac+(1-Gamma_c)/rR_c))+Ta
+    Tc_max[sub] = (1-0.5)*Rna_c[sub]/(rho[sub]*!CP*(1/Rac[sub]+(1-0.5)/rR_c[sub]))+Ta[sub]
     ;Minmum surface temperature for wet bare soil
-    Tsmin = ((1-Gamma_s)*Rna_s-rho*!CP*VPD/(gamma_hy*Ras))/(rho*!CP*((gamma_hy+Delta)/(gamma_hy*Ras)+(1-Gamma_s)/rR_s))+Ta
+    Ts_min = ((1-Gamma_s)*Rna_s-rho*!CP*VPD/(gamma_hy*Ras))/(rho*!CP*((gamma_hy+Delta)/(gamma_hy*Ras)+(1-Gamma_s)/rR_s))+Ta
     ;Minmum surface temperature for wet canopy
-    Tcmin = ((1-Gamma_c)*Rna_c-rho*!CP*VPD/(gamma_hy*Rac))/(rho*!CP*((gamma_hy+Delta)/(gamma_hy*Rac)+(1-Gamma_c)/rR_c))+Ta
-    Tcmin[sub] = ((1-0.5)*Rna_c[sub]-rho[sub]*!CP*VPD[sub]/(gamma_hy[sub]*Rac[sub]))/(rho[sub]*!CP*((gamma_hy[sub]+Delta[sub])/(gamma_hy[sub]*Rac[sub])+(1-0.5)/rR_c[sub]))+Ta[sub]
+    Tc_min = ((1-Gamma_c)*Rna_c-rho*!CP*VPD/(gamma_hy*Rac))/(rho*!CP*((gamma_hy+Delta)/(gamma_hy*Rac)+(1-Gamma_c)/rR_c))+Ta
+    Tc_min[sub] = ((1-0.5)*Rna_c[sub]-rho[sub]*!CP*VPD[sub]/(gamma_hy[sub]*Rac[sub]))/(rho[sub]*!CP*((gamma_hy[sub]+Delta[sub])/(gamma_hy[sub]*Rac[sub])+(1-0.5)/rR_c[sub]))+Ta[sub]
 
     ;Soil Moisture availability calculation
-    Lambda_SM = SOIL_MOISTURE_AVAILABILITY(Trad,Tsmax,Tcmax,Tsmin,Tcmin,Fc,Fs)
+    Lambda_SM = SOIL_MOISTURE_AVAILABILITY(Trad,Ts_max,Tc_max,Ts_min,Tc_min,Fc,Fs)
 
     ;Gamma (the ratio of G/Rn)
     Gamma_sd = 0.2   ;Gamma for dry bare soil
@@ -313,8 +313,8 @@ PRO IFEM_Main_Program
     Gamma_s = Gamma_sw*Lambda_SM + Gamma_sd*(1-Lambda_SM)  ;Gamma for bare soil
 
     ;Interpolation of the Slope 
-    K_cold = Tcmin-Tsmin     ;Slope of the cold edge
-    K_warm = Tcmax-Tsmax     ;Slope of the warm edge
+    K_cold = Tc_min-Ts_min     ;Slope of the cold edge
+    K_warm = Tc_max-Ts_max     ;Slope of the warm edge
     K_slope = K_warm+Lambda_SM*(K_cold-K_warm)  ;Slope of the Lambda_SM isoline
 
     ;Let the slope K converge faster
@@ -344,8 +344,8 @@ PRO IFEM_Main_Program
   ;=====================Instantaneous Energy Fluxes====================
 
   ;Instantaneous latent heat flux [W m-2]
-  LEs_max =(1-Gamma_s)*Rna_s - rho*!CP*(1/Ras+(1-Gamma_s)/rR_s)*(Tsmin-Ta)
-  LEc_max =(1-Gamma_c)*Rna_c - rho*!CP*(1/Rac+(1-Gamma_c)/rR_c)*(Tcmin-Ta)
+  LEs_max =(1-Gamma_s)*Rna_s - rho*!CP*(1/Ras+(1-Gamma_s)/rR_s)*(Ts_min-Ta)
+  LEc_max =(1-Gamma_c)*Rna_c - rho*!CP*(1/Rac+(1-Gamma_c)/rR_c)*(Tc_min-Ta)
   LE_s = Lambda_SM*LEs_max     ;For bare soil component
   LE_c = Lambda_SM*LEc_max     ;For canopy component
   LE_inst = Fc*LE_c + Fs*LE_s  ;Aggregate surface
@@ -415,107 +415,94 @@ PRO IFEM_Main_Program
     DAY = STRTRIM(STRING(DAY),2)
   ENDELSE
 
-;  ;Output Gamma
-;  Gamma_URI = Out_path+Year+Month+Day+'_IFEM_Gamma.dat'
-;  Gamma_Raster = ENVIRASTER(Gamma,SPATIALREF=Grid.SPATIALREF,URI=Gamma_URI)
-;  Gamma_Raster.SAVE
-;  Gamma_Raster.CLOSE
-
-;  ;Output Ta
-;  Ta_URI = Out_path+Year+Month+Day+'_IFEM_Air_Temperature.dat'
-;  Ta_Raster = ENVIRASTER(Ta-273.15,SPATIALREF=Grid.SPATIALREF,URI=Ta_URI)
-;  Ta_Raster.SAVE
-;  Ta_Raster.CLOSE
 
   ;Output Soil Moistuare Availability
-  Lambda_SM_URI = Out_path+Year+Month+Day+'_IFEM_Soil_Moisture_Availability.dat'
-  Lambda_SM_Raster = ENVIRASTER(Lambda_SM,SPATIALREF=Grid.SPATIALREF,URI=Lambda_SM_URI)
+  Lambda_SM_Raster = ENVIRASTER(Lambda_SM,SPATIALREF=Grid.SPATIALREF,URI=e.GetTemporaryFilename())
   Lambda_SM_Raster.SAVE
+  Lambda_SM_URI = Out_path+Year+Month+Day+'_Soil moisture availability (ET efficiency).tif'
+  Lambda_SM_Raster.EXPORT,Lambda_SM_URI,'tiff'
   Lambda_SM_Raster.CLOSE
 
   ;Output Rn
-  Rn_URI = Out_path+Year+Month+Day+'_IFEM_net_radiation.dat'
-  Rn_Raster = ENVIRASTER(Rn,SPATIALREF=Grid.SPATIALREF,URI=Rn_URI)
+  Rn_Raster = ENVIRASTER(Rn,SPATIALREF=Grid.SPATIALREF,URI=e.GetTemporaryFilename())
   Rn_Raster.SAVE
+  Rn_URI = Out_path+Year+Month+Day+'_Net Solar Radiation [W m-2].tif'
+  Rn_Raster.EXPORT,Rn_URI,'tiff'
   Rn_Raster.CLOSE
 
-;  ;Output LE_s and LE_c
-;  LEs_URI = Out_path+Year+Month+Day+'_IFEM_Soil_Latent.dat'
-;  LEs_Raster = ENVIRASTER(LE_s,SPATIALREF=Grid.SPATIALREF,URI=LEs_URI)
-;  LES_Raster.SAVE
-;  LES_Raster.CLOSE
-;  LEc_URI = Out_path+Year+Month+Day+'_IFEM_Vegetation_Latent.dat'
-;  LEc_Raster = ENVIRASTER(LE_c,SPATIALREF=Grid.SPATIALREF,URI=LEc_URI)
-;  LEc_Raster.SAVE
-;  LEc_Raster.CLOSE
-  LE_URI = Out_path+Year+Month+Day+'_IFEM_Latent.dat'
-  LE_Raster = ENVIRASTER(LE_inst,SPATIALREF=Grid.SPATIALREF,URI=LE_URI)
+  ;Output LE
+  LE_Raster = ENVIRASTER(LE_inst,SPATIALREF=Grid.SPATIALREF,URI=e.GetTemporaryFilename())
   LE_Raster.SAVE
+  LE_URI = Out_path+Year+Month+Day+'_Latent Heat Flux [W m-2].tif'
+  LE_Raster.EXPORT,LE_URI,'tiff'
   LE_Raster.CLOSE
 
   ;Output G
-  G_URI = Out_path+Year+Month+Day+'_IFEM_Soil_Heat_Flux.dat'
-  G_Raster = ENVIRASTER(G,SPATIALREF=Grid.SPATIALREF,URI=G_URI)
+  G_Raster = ENVIRASTER(G,SPATIALREF=Grid.SPATIALREF,URI=e.GetTemporaryFilename())
   G_Raster.SAVE
+  G_URI = Out_path+Year+Month+Day+'_Soil Heat Flux [W m-2].tif'
+  G_Raster.EXPORT,G_URI,'tiff'
   G_Raster.CLOSE
 
   ;Output H
-  H_URI = Out_path+Year+Month+Day+'_IFEM_Sensible_Heat_Flux.dat'
-  H_Raster = ENVIRASTER(H,SPATIALREF=Grid.SPATIALREF,URI=H_URI)
+  
+  H_Raster = ENVIRASTER(H,SPATIALREF=Grid.SPATIALREF,URI=e.GetTemporaryFilename())
   H_Raster.SAVE
+  H_URI = Out_path+Year+Month+Day+'_Sensible Heat Flux [W m-2].tif'
+  H_Raster.EXPORT,H_URI,'tiff'
   H_Raster.CLOSE
 
   IF Daylight NE !NULL AND Daylight NE 0 THEN BEGIN
     ;Output Component Evaporationn
-    E_URI = Out_path+Year+Month+Day+'_IFEM_Daily_Evaporation.dat'
-    E_Raster = ENVIRASTER(E_Daily,SPATIALREF=Grid.SPATIALREF,URI=E_URI)
-    E_Raster.SAVE
-    E_Raster.CLOSE
+    E_daily_Raster = ENVIRASTER(E_Daily,SPATIALREF=Grid.SPATIALREF,URI=e.GetTemporaryFilename())
+    E_daily_Raster.SAVE
+    E_daily_URI = Out_path+Year+Month+Day+'_Daily Evaporation for bare soil components [mm d-1].tif'
+    E_daily_Raster.EXPORT,E_daily_URI,'tiff'
+    E_daily_Raster.CLOSE
 
     ;Output Component Transpiration
-    T_URI = Out_path+Year+Month+Day+'_IFEM_Daily_Transpiration.dat'
-    T_Raster = ENVIRASTER(T_Daily,SPATIALREF=Grid.SPATIALREF,URI=T_URI)
-    T_Raster.SAVE
-    T_Raster.CLOSE
+    T_daily_Raster = ENVIRASTER(T_Daily,SPATIALREF=Grid.SPATIALREF,URI=e.GetTemporaryFilename())
+    T_daily_Raster.SAVE
+    T_daily_URI = Out_path+Year+Month+Day+'_Daily Transpiration for vegetation components [mm d-1].tif'
+    T_daily_Raster.EXPORT,T_daily_URI,'tiff'
+    T_daily_Raster.CLOSE
     
     ;Output Component Transpiration
-    ET_URI = Out_path+Year+Month+Day+'_IFEM_Daily_ET.dat'
-    ET_Raster = ENVIRASTER(ET_Daily,SPATIALREF=Grid.SPATIALREF,URI=ET_URI)
-    ET_Raster.SAVE
-    ET_Raster.CLOSE
+    ET_daily_Raster = ENVIRASTER(ET_Daily,SPATIALREF=Grid.SPATIALREF,URI=e.GetTemporaryFilename())
+    ET_daily_Raster.SAVE
+    ET_daily_URI = Out_path+Year+Month+Day+'_Daily Evapotranspiration [mm d-1].tif'
+    ET_daily_Raster.EXPORT,ET_daily_URI,'tiff'
+    ET_daily_Raster.CLOSE
   ENDIF
 
 
-;  ;Output Trad
-;  Trad_URI = Out_path+Year+Month+Day+'_IFEM_Trad.dat'
-;  Trad_Raster = ENVIRASTER(Trad,SPATIALREF=Grid.SPATIALREF,URI=Trad_URI)
-;  Trad_Raster.SAVE
-;  Trad_Raster.CLOSE
-;  ;Output Fc
-;  Fc_URI = Out_path+Year+Month+Day+'_IFEM_Fc.dat'
-;  Fc_Raster = ENVIRASTER(Fc,SPATIALREF=Grid.SPATIALREF,URI=Fc_URI)
-;  Fc_Raster.SAVE
-;  Fc_Raster.CLOSE
-;  ;Output Tsmax
-;  Tsmax_URI = Out_path+Year+Month+Day+'_IFEM_Tsmax.dat'
-;  Tsmax_Raster = ENVIRASTER(Tsmax,SPATIALREF=Grid.SPATIALREF,URI=Tsmax_URI)
-;  Tsmax_Raster.SAVE
-;  Tsmax_Raster.CLOSE
-;  ;Output Tsmin
-;  Tsmin_URI = Out_path+Year+Month+Day+'_IFEM_Tsmin.dat'
-;  Tsmin_Raster = ENVIRASTER(Tsmin,SPATIALREF=Grid.SPATIALREF,URI=Tsmin_URI)
-;  Tsmin_Raster.SAVE
-;  Tsmin_Raster.CLOSE
-;  ;Output Tcmax
-;  Tcmax_URI = Out_path+Year+Month+Day+'_IFEM_Tcmax.dat'
-;  Tcmax_Raster = ENVIRASTER(Tcmax,SPATIALREF=Grid.SPATIALREF,URI=Tcmax_URI)
-;  Tcmax_Raster.SAVE
-;  Tcmax_Raster.CLOSE
-;  ;Output Tcmin
-;  Tcmin_URI = Out_path+Year+Month+Day+'_IFEM_Tcmin.dat'
-;  Tcmin_Raster = ENVIRASTER(Tcmin,SPATIALREF=Grid.SPATIALREF,URI=Tcmin_URI)
-;  Tcmin_Raster.SAVE
-;  Tcmin_Raster.CLOSE
+  ;Output Tsmax
+  Ts_max_Raster = ENVIRASTER(Ts_max-273.15,SPATIALREF=Grid.SPATIALREF,URI=e.GetTemporaryFilename())
+  Ts_max_Raster.SAVE
+  Ts_max_URI = Out_path+Year+Month+Day+'_Potential maximum temperature of bare soil surface [Celsius].tif'
+  Ts_max_Raster.EXPORT,Ts_max_URI,'tiff'
+  Ts_max_Raster.CLOSE
+  
+  ;Output Tsmin
+  Ts_min_Raster = ENVIRASTER(Ts_min-273.15,SPATIALREF=Grid.SPATIALREF,URI=e.GetTemporaryFilename())
+  Ts_min_Raster.SAVE
+  Ts_min_URI = Out_path+Year+Month+Day+'_Potential minimum temperature of bare soil surface [Celsius].tif'
+  Ts_min_Raster.EXPORT,Ts_min_URI,'tiff'
+  Ts_min_Raster.CLOSE
+  
+  ;Output Tcmax
+  Tc_max_Raster = ENVIRASTER(Tc_max-273.15,SPATIALREF=Grid.SPATIALREF,URI=e.GetTemporaryFilename())
+  Tc_max_Raster.SAVE
+  Tc_max_URI = Out_path+Year+Month+Day+'_Potential maximum temperature of vegetation surface [Celsius].tif'
+  Tc_max_Raster.EXPORT,Tc_max_URI,'tiff'
+  Tc_max_Raster.CLOSE
+  
+  ;Output Tcmin
+  Tc_min_Raster = ENVIRASTER(Tc_min-273.15,SPATIALREF=Grid.SPATIALREF,URI=e.GetTemporaryFilename())
+  Tc_min_Raster.SAVE
+  Tc_min_URI = Out_path+Year+Month+Day+'_Potential minimum temperature of vegetation surface [Celsius].tif'
+  Tc_min_Raster.EXPORT,Tc_min_URI,'tiff'
+  Tc_min_Raster.CLOSE
   
   ;=======================================================
   

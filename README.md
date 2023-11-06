@@ -1,11 +1,14 @@
 # IFEM remote sensing ET model for dual source
 
-* [**Introduction**](#-introduction)
-* [**User Guide**](#-user-guide)     
+* [**💡 Introduction**](#-introduction)
+* [**🧱 Operating environment**](#-operating-environment)
+* [**🔮 User Guide for The Program**](#-user-guide-for-the-program)
+* [**🧲 User Guide for The Extension**](#-user-guide-for-the-extension)
+* [**📩 Contact Us**](#-contact-us)
 
 ## 💡 Introduction
 
-**An Independent Framework-based Evapotranspiration Model (IFEM)** for dual-source: from field to regional scale.
+This is the repository of **The Independent Framework-based Evapotranspiration Model (IFEM)** for dual-source.
 
 The IFEM model is a remote sensing-based land surface evapotranspiration retrieval model. It is a **user-friendly** model that allows for the easy estimation of surface evaporation and transpiration components with minimal required surface observation data.
 
@@ -15,19 +18,16 @@ The IFEM model is based on the modeling approach of **Fractional vegetation cove
 
 ![Guide_figures/Flow chart.jpg](Guide_figures/Space.jpg)
 
-> **Please cite:** *[Wang, S., Wang, C., Zhang, C., Wang, W., Wang, P., Zhang, X., Wang, X., Rong, Y., Wang, D., Huang, G., Huo, Z., 2023. An independent framework-based evapotranspiration model (IFEM) for dual-source: From field to regional scale. Remote Sensing of Environment 298, 113792. https://doi.org/10.1016/j.rse.2023.113792](https://doi.org/10.1016/j.rse.2023.113792)*
-> 
-> **E-mail:**
-> * 214544015@qq.com (Dr. Shuai Wang);
-> * huozl@cau.edu.cn (Professor Zailin Huo).
 
-
-
-## 🔮 User Guide
+## 🧱 Operating environment
 
 The IFEM model is developed based on the **ENVI/IDL platform**. Before using this program, please make sure you have correctly installed **ENVI 5.3 (IDL 8.5)** or higher version on your personal computer or workstation.
 
 ![ENVI/IDL platform](Guide_figures/ENVIIDL%20platform.jpg)
+
+## 🔮 User Guide for The Program
+
+The program code can be compiled and executed in the ENVI/IDL environment. For individual routines, simply follow the steps below, modify the input parameters, and then run. However, if there is a need to process a large amount of data, IDLBridge technology can be used for parallel processing, and developers need to have knowledge of IDL programming.
 
 * **Step1:** First, download the main IFEM program file [**IFEM_Main_Program.pro**](IFEM_Main_Program.pro) and open it using the IDL IDE.![Step1](Guide_figures/Step1.jpg)
 
@@ -48,3 +48,24 @@ The IFEM model is developed based on the **ENVI/IDL platform**. Before using thi
 ![Step4](Guide_figures/Step4.jpg)
 
 
+## 🧲 User Guide for The Extension
+
+This extension allows users to run IFEM models through the ENVI interactive interface without any IDL programming knowledge.
+
+* **Step1:** Place the [IFEM extension file](IFEM_EXTENSION.sav) (.sav) in the extension folder under the ENVI installation path: `D:\...\ENVI53\extensions\...`. Then restart ENVI. The IFEM extension can be found in Toolbox-Extension.
+
+![Extension Location](Guide_figures/Extension%20location.jpg)
+
+* **Step2:** Enter the parameters and raster file in the interactive interface, and then click the ‘**Execute**’ button to execute the IFEM program.
+  ![Extension UI](Guide_figures/IFEM%20Extension%20UI%20guide.jpg)
+  
+* **Step3:** The output results will be saved in the specified output path and **displayed in the ENVI window**.
+![Result Display](Guide_figures/Result%20Output.jpg)
+
+
+## 📩 Contact us
+
+ * Dr. **Shuai Wang**, Ninxia University, 214544015@qq.com;
+* Prof. **Zailin Huo**, China Agricultural University, huozl@cau.edu.cn.
+
+> **Please cite:** *[Wang, S., Wang, C., Zhang, C., Wang, W., Wang, P., Zhang, X., Wang, X., Rong, Y., Wang, D., Huang, G., Huo, Z., 2023. An independent framework-based evapotranspiration model (IFEM) for dual-source: From field to regional scale. Remote Sensing of Environment, 298, 113792. https://doi.org/10.1016/j.rse.2023.113792](https://doi.org/10.1016/j.rse.2023.113792)*
